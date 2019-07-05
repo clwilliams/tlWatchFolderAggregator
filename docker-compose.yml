@@ -1,0 +1,69 @@
+version: '3.6'
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.4.3
+    environment:
+      cluster.name: "magentodev"
+      bootstrap.memory_lock: "true"
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xms1024m -Xmx1024m"
+      http.host: 0.0.0.0
+      transport.host: 0.0.0.0
+      http.cors.enabled: "true"
+      http.cors.allow-origin: "*"
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+      - esdataplugins1:/usr/share/elasticsearch/plugins
+    ports:
+      - 9200:9200
+    networks:
+      default:
+        aliases:
+          - elasticsearch
+
+  head:
+    image: tobias74/elasticsearch-head:6
+    ports:
+      - 9100:9100
+
+  rabbit:
+    image: "rabbitmq:3-management"
+    volumes:
+      - 'rabbit_data:/var/lib/rabbitmq'
+    hostname: "rabbit"
+    networks:
+      default:
+        aliases:
+          - rabbitmq
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  minio:
+    restart: unless-stopped
+    image: minio/minio:RELEASE.2018-09-11T01-39-21Z
+    command: server /data
+    environment:
+      - MINIO_ACCESS_KEY=development
+      - MINIO_SECRET_KEY=itsasunnyday
+    volumes:
+      - minio_data:/data
+    ports:
+      - '9000:9000'
+
+volumes:
+  rabbit_data:
+    driver: local
+  esdata1:
+    driver: local
+  esdataplugins1:
+    driver: local
+  minio_data:
+    driver: local
