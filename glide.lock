@@ -1,0 +1,44 @@
+hash: 2f42875233a1b350f51f50712c45671daeaf11e041e0e12a99871b470ae53c1e
+updated: 2019-07-07T08:10:55.52256+01:00
+imports:
+- name: github.com/alecthomas/kingpin
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
+- name: github.com/alecthomas/template
+  version: a0175ee3bccc567396460bf5acd36800cb10c49c
+  subpackages:
+  - parse
+- name: github.com/alecthomas/units
+  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
+- name: github.com/gorilla/handlers
+  version: 7e0847f9db758cdebd26c149d0ae9d5d0b9c98ce
+- name: github.com/gorilla/mux
+  version: 00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15
+- name: github.com/mailru/easyjson
+  version: 1de009706dbeb9d05f18586f0735fcdb7c524481
+  subpackages:
+  - buffer
+  - jlexer
+  - jwriter
+- name: github.com/olivere/elastic
+  version: 407a1d940dcc89e279c579eb393d0bdde8fd9ac4
+  subpackages:
+  - config
+  - uritemplates
+- name: github.com/pkg/errors
+  version: ba968bfe8b2f7e042a574c888954fccecfa385b4
+- name: github.com/radovskyb/watcher
+  version: d8b41ca2397a9b5cfc26adb10edbbcde40187a87
+- name: github.com/rs/zerolog
+  version: acf3980132bfcdc48638724e6e3d9e5749b85999
+  subpackages:
+  - internal/cbor
+  - internal/json
+  - log
+- name: github.com/streadway/amqp
+  version: 75d898a42a940fbc854dfd1a4199eabdc00cf024
+- name: gopkg.in/olivere/elastic.v2
+  version: 2cd27b9ae892f6b4dd8dd6d73489797c99e9c6fa
+  subpackages:
+  - backoff
+  - uritemplates
+testImports: []
