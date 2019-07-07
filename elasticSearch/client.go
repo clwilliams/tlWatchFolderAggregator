@@ -2,7 +2,6 @@ package elasticSearch
 
 import (
 	"context"
-	"fmt"
 
 	es "github.com/olivere/elastic"
 )
@@ -18,14 +17,12 @@ type App struct {
 }
 
 // New -
-func New(verbose bool, esHost, esIndex, esPort string) (*App, error) {
+func New(verbose bool, esURL, esIndex string) (*App, error) {
 
 	ctx := context.Background()
 
-	elasticSearchURL := fmt.Sprintf("%s:%s",esHost,esPort)
-
 	// connect to the elastic search client
-	client, err := es.NewClient(es.SetURL(elasticSearchURL, elasticSearchURL))
+	client, err := es.NewClient(es.SetSniff(false))
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +37,7 @@ func New(verbose bool, esHost, esIndex, esPort string) (*App, error) {
 		Client:           client,
 		Verbose:          verbose,
 		Index:            esIndex,
-		ElasticSearchURL: elasticSearchURL,
+		ElasticSearchURL: esURL,
 	}
 
 	return app, nil

@@ -24,8 +24,7 @@ const (
 	defaultRabbitMqPort     = "5672"
 	defaultRabbitMqUser     = "rabbitmq"
 	defaultRabbitMqPassword = "rabbitmq"
-	defaultEsHost           = "localhost"
-	defaultEsPort           = "3000"
+	defaultEsURL            = "http://localhost:9200"
 	defaultEsIndex          = "tl-watch"
 	defaultAPIPort          = "3001"
 )
@@ -37,9 +36,8 @@ var (
 	rabbitMqPort     = kingpin.Flag("rabbit-mq-port", "").Envar("RABBITMQ_PORT").Default(defaultRabbitMqPort).String()
 	rabbitMqUser     = kingpin.Flag("rabbit-mq-user", "").Envar("RABBITMQ_USER").Default(defaultRabbitMqUser).String()
 	rabbitMqPassword = kingpin.Flag("rabbit-mq-password", "").Envar("RABBITMQ_PASSWORD").Default(defaultRabbitMqPassword).String()
-	elasticHost      = kingpin.Flag("es-host", "ElasticSearch hostname").Short('h').Envar("ES_HOST").Default(defaultEsHost).String()
+	elasticURL      = kingpin.Flag("es-host", "ElasticSearch URL").Short('u').Envar("ES_URL").Default(defaultEsURL).String()
   elasticIndex     = kingpin.Flag("es-index", "ElasticSearch index").Short('i').Envar("ES_INDEX").Default(defaultEsIndex).String()
-  elasticPort      = kingpin.Flag("es-port", "ElasticSearch port").Envar("ES_PORT").Short('p').Default(defaultEsPort).String()
 	apiPort          = kingpin.Flag("api-port", "REST API port").Envar("API_PORT").Short('a').Default(defaultAPIPort).String()
 )
 
@@ -86,7 +84,7 @@ func main() {
 	defer rabbitMqClient.Close()
 
 	// Initialise elastic search
-  esApp, err := elasticSearch.New(*verbose, *elasticHost, *elasticIndex, *elasticPort)
+  esApp, err := elasticSearch.New(*verbose, *elasticURL, *elasticIndex)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to ElasticSearch")
 	}
