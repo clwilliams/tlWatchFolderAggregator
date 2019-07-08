@@ -1,29 +1,30 @@
 package internal
 
 import (
-  "encoding/json"
-  	"net/http"
-    "github.com/tlWatchFolderAggregator/elasticSearch"
-    "strconv"
+	"encoding/json"
+	"net/http"
+	"strconv"
+
+	"github.com/tlWatchFolderAggregator/elasticSearch"
 )
 
 // GetAll returns a list of articles
 func GetAll(config *elasticSearch.App) http.Handler {
-  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    corsResponseHeader(w, false)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		corsResponseHeader(w, false)
 
-    fsNodes, totalHits, err := config.GetAllFsNodes()
-    if err != nil {
-      http.Error(w, err.Error(), http.StatusInternalServerError)
-    }
+		fsNodes, totalHits, err := config.GetAllFsNodes()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
-    js, err := json.Marshal(fsNodes)
-    if err != nil {
-      http.Error(w, err.Error(), http.StatusInternalServerError)
-    }
-    corsResponseHeaderTotalCount(w, totalHits)
-    w.Write(js)
- })
+		js, err := json.Marshal(fsNodes)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		corsResponseHeaderTotalCount(w, totalHits)
+		w.Write(js)
+	})
 }
 
 // all responses need this set when fulfilling the request

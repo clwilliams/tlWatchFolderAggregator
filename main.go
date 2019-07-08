@@ -45,7 +45,7 @@ var (
 	rabbitMqExchange   = kingpin.Flag("rabbit-mq-exchange", "").Default(defaultRabbitMqExchange).String()
 	rabbitMqQueue      = kingpin.Flag("rabbit-mq-queue", "").Default(defaultRabbitMqQueue).String()
 	rabbitMqRoutingKey = kingpin.Flag("rabbit-mq-routing-key", "").Default(defaultRabbitMqRoutingKey).String()
-	elasticURL         = kingpin.Flag("es-host", "ElasticSearch URL").Short('u').Envar("ES_URL").Default(defaultEsURL).String()
+	elasticURL         = kingpin.Flag("es-url", "ElasticSearch URL").Short('u').Envar("ES_URL").Default(defaultEsURL).String()
 	elasticIndex       = kingpin.Flag("es-index", "ElasticSearch index").Short('i').Envar("ES_INDEX").Default(defaultEsIndex).String()
 	apiPort            = kingpin.Flag("api-port", "REST API port").Envar("API_PORT").Short('a').Default(defaultAPIPort).String()
 	handlerTimeout     = kingpin.Flag("handler-timeout", "Timeout in milliseconds for handling a message").Default(defaultHandlerTimeout).Int()
@@ -97,26 +97,21 @@ func main() {
 	server(esApp)
 
 	// Initialise Rabbit MQ
-	/*
-		rabbitMqClient, err := rabbitMQ.NewClient(rabbitMqHost, rabbitMqPort, rabbitMqUser, rabbitMqPassword)
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ")
-		}
-		defer rabbitMqClient.Close()*/
-
-	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", *rabbitMqUser, *rabbitMqPassword, *rabbitMqHost, *rabbitMqPort))
+	rabbitMqConnection, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", *rabbitMqUser, *rabbitMqPassword, *rabbitMqHost, *rabbitMqPort))
+	// (a) connection
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ")
 	}
-	defer conn.Close()
-	conn.Channel()
-
-	c, err := conn.Channel()
-	defer c.Close()
+	defer rabbitMqConnection.Close()
+	// (b) channel
+	rabbitMqChannel, err := rabbitMqConnection.Channel()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ Channel")
 	}
-	if err = c.ExchangeDeclare("thirdlight", "topic", true, false, false, false, nil); err != nil {
+	defer rabbitMqChannel.Close()
+	// (c) exchange
+
+	if err = rabbitMqChannel.ExchangeDeclare(*rabbitMqExchange, "topic", true, false, false, false, nil); err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ Topic")
 	}
 
@@ -131,20 +126,20 @@ func main() {
 	}
 	// func HandleFolderWatchUpdate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
 	for _, binding := range []bind{
-		{"thirdlight", "watcher_update", internal.HandleFolderWatchUpdate(esApp)},
+		{*rabbitMqQueue, *rabbitMqRoutingKey, internal.HandleFolderWatchUpdate(esApp)},
 	} {
-		if _, err := c.QueueDeclare(binding.queue, true, false, false, false, nil); err != nil {
+		if _, err := rabbitMqChannel.QueueDeclare(binding.queue, true, false, false, false, nil); err != nil {
 			log.Error().Err(err).Str(binding.queue, binding.queue).Msg("Problem declaring queue")
 			// log.Errorf("Problem declaring queue %s: %v", binding.queue, err)
 		}
-		if err := c.QueueBind(binding.queue, binding.key, "thirdlight", false, nil); err != nil {
+		if err := rabbitMqChannel.QueueBind(binding.queue, binding.key, *rabbitMqExchange, false, nil); err != nil {
 			log.Error().Err(err).Str(binding.queue, binding.queue).Msg("Problem binding")
 		}
-		if err := c.Qos(3, 0, false); err != nil {
+		if err := rabbitMqChannel.Qos(3, 0, false); err != nil {
 			log.Error().Err(err).Msg("Problem setting QOS")
 		}
 
-		deliveries, err := c.Consume(binding.queue, "", false, false, false, false, nil)
+		deliveries, err := rabbitMqChannel.Consume(binding.queue, "", false, false, false, false, nil)
 		if err != nil {
 			log.Error().Err(err).Str(binding.queue, binding.queue).Msg("Problem setting consumer for")
 		}

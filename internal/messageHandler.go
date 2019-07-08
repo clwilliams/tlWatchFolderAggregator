@@ -1,11 +1,12 @@
 package internal
 
 import (
-  "context"
-  "encoding/json"
-  log "github.com/sirupsen/logrus"
-  "github.com/tlWatchFolderAggregator/rabbitMQ"
-  "github.com/tlWatchFolderAggregator/elasticSearch"
+	"context"
+	"encoding/json"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/tlWatchFolderAggregator/elasticSearch"
+	"github.com/tlWatchFolderAggregator/rabbitMQ"
 )
 
 // HandleFolderWatchUpdate -
@@ -15,30 +16,34 @@ func HandleFolderWatchUpdate(config *elasticSearch.App) func(context.Context, []
 		//	SKU string `json:"sku"`
 		//	Qty int    `json:"qty"`
 		//}{}
-    folderWatchMsg := rabbitMQ.FolderWatch{}
+		folderWatchMsg := rabbitMQ.FolderWatch{}
 		if err := json.Unmarshal(msg, &folderWatchMsg); err != nil {
 			log.Errorf("Can't unmarshal FolderWatch update %v : %v", err, string(msg))
 			return nil
 		}
 
-    switch (folderWatchMsg.Action) {
-      case rabbitMQ.CreateAction: {
-        return handleCreate(config, &folderWatchMsg)
-      }
-      case rabbitMQ.DeleteAction: {
-        return handleDelete(config, &folderWatchMsg)
-      }
-      case rabbitMQ.RenameAction: {
-        return handleRename(config, &folderWatchMsg)
-      }
-      case rabbitMQ.MoveAction: {
-        return handleMove(config, &folderWatchMsg)
-      }
-      // we shouldn't have any unhandled case as the watcher is configured to
-      // report the above 4 event types
-    }
-    return nil
-  }
+		switch folderWatchMsg.Action {
+		case rabbitMQ.CreateAction:
+			{
+				return handleCreate(config, &folderWatchMsg)
+			}
+		case rabbitMQ.DeleteAction:
+			{
+				return handleDelete(config, &folderWatchMsg)
+			}
+		case rabbitMQ.RenameAction:
+			{
+				return handleRename(config, &folderWatchMsg)
+			}
+		case rabbitMQ.MoveAction:
+			{
+				return handleMove(config, &folderWatchMsg)
+			}
+			// we shouldn't have any unhandled case as the watcher is configured to
+			// report the above 4 event types
+		}
+		return nil
+	}
 }
 
 /*
@@ -51,17 +56,17 @@ func HandleFolderWatchUpdate(config *elasticSearch.App) func(context.Context, []
   }
 */
 func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
-  fsNode := elasticSearch.FsNode {
-    ID: folderWatchMsg.Path,
-    Name: "",
-    IsDir: folderWatchMsg.IsDir,
-    Path: folderWatchMsg.Path,
-  }
-  err := config.Save(fsNode)
-  if err != nil {
-    return err
-  }
-  return nil
+	fsNode := elasticSearch.FsNode{
+		ID:    folderWatchMsg.Path,
+		Name:  "",
+		IsDir: folderWatchMsg.IsDir,
+		Path:  folderWatchMsg.Path,
+	}
+	err := config.Save(fsNode)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 /*
@@ -72,13 +77,13 @@ func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
     Path:"/Users/clairew/watch_me/2019/April/May/.DS_Store",
     IsDir:"false"
   }
-  */
+*/
 func handleDelete(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
-  err := config.Delete(folderWatchMsg.Path)
-  if err != nil {
-    return err
-  }
-  return nil
+	err := config.Delete(folderWatchMsg.Path)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 /*
@@ -91,7 +96,7 @@ func handleDelete(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
   }
 */
 func handleRename(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
-  return nil
+	return nil
 }
 
 /*
@@ -104,5 +109,5 @@ func handleRename(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
   }
 */
 func handleMove(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
-  return nil
+	return nil
 }
