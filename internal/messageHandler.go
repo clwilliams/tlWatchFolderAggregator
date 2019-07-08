@@ -1,29 +1,44 @@
 package internal
 
 import (
+  "context"
+  "encoding/json"
+  log "github.com/sirupsen/logrus"
   "github.com/tlWatchFolderAggregator/rabbitMQ"
   "github.com/tlWatchFolderAggregator/elasticSearch"
 )
 
 // HandleFolderWatchUpdate -
-func HandleFolderWatchUpdate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
-  switch (folderWatchMsg.Action) {
-    case rabbitMQ.CreateAction: {
-      return handleCreate(config, folderWatchMsg)
+func HandleFolderWatchUpdate(config *elasticSearch.App) func(context.Context, []byte) error {
+	return func(ctx context.Context, msg []byte) error {
+		//stockMsg := struct {
+		//	SKU string `json:"sku"`
+		//	Qty int    `json:"qty"`
+		//}{}
+    folderWatchMsg := rabbitMQ.FolderWatch{}
+		if err := json.Unmarshal(msg, &folderWatchMsg); err != nil {
+			log.Errorf("Can't unmarshal FolderWatch update %v : %v", err, string(msg))
+			return nil
+		}
+
+    switch (folderWatchMsg.Action) {
+      case rabbitMQ.CreateAction: {
+        return handleCreate(config, &folderWatchMsg)
+      }
+      case rabbitMQ.DeleteAction: {
+        return handleDelete(config, &folderWatchMsg)
+      }
+      case rabbitMQ.RenameAction: {
+        return handleRename(config, &folderWatchMsg)
+      }
+      case rabbitMQ.MoveAction: {
+        return handleMove(config, &folderWatchMsg)
+      }
+      // we shouldn't have any unhandled case as the watcher is configured to
+      // report the above 4 event types
     }
-    case rabbitMQ.DeleteAction: {
-      return handleDelete(config, folderWatchMsg)
-    }
-    case rabbitMQ.RenameAction: {
-      return handleRename(config, folderWatchMsg)
-    }
-    case rabbitMQ.MoveAction: {
-      return handleMove(config, folderWatchMsg)
-    }
-    // we shouldn't have any unhandled case as the watcher is configured to
-    // report the above 4 event types
+    return nil
   }
-  return nil
 }
 
 /*

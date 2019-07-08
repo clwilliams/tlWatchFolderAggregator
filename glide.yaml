@@ -1,17 +1,17 @@
 package: github.com/tlWatchFolderAggregator
 import:
 - package: github.com/alecthomas/kingpin
-  version: ^2.2.3
-- package: github.com/gorilla/mux
-  version: ^1.1.0
+  version: ^2.2.6
 - package: github.com/gorilla/handlers
-  version: ^1.1.0
+  version: ^1.4.0
+- package: github.com/gorilla/mux
+  version: ^1.7.3
 - package: github.com/olivere/elastic
-  version: =6.2.16
-- package: github.com/radovskyb/watcher
-  version: ^1.0.6
+  version: ^7.0.4
 - package: github.com/rs/zerolog
   version: ^1.14.3
   subpackages:
   - log
+- package: github.com/sirupsen/logrus
+  version: ^1.4.2
 - package: github.com/streadway/amqp

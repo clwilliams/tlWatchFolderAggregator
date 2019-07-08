@@ -1,5 +1,5 @@
-hash: 2f42875233a1b350f51f50712c45671daeaf11e041e0e12a99871b470ae53c1e
-updated: 2019-07-07T08:10:55.52256+01:00
+hash: dfad7465cc5d7d05c7b8982a8a2a7b7f250887981ee000bf7ef95dad1f30ab39
+updated: 2019-07-07T22:48:04.512985+01:00
 imports:
 - name: github.com/alecthomas/kingpin
   version: 947dcec5ba9c011838740e680966fd7087a71d0d
@@ -9,10 +9,14 @@ imports:
   - parse
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
+- name: github.com/fortytw2/leaktest
+  version: 9a23578d06a26ec1b47bfc8965bf5e7011df8bd6
 - name: github.com/gorilla/handlers
   version: 7e0847f9db758cdebd26c149d0ae9d5d0b9c98ce
 - name: github.com/gorilla/mux
   version: 00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
 - name: github.com/mailru/easyjson
   version: 1de009706dbeb9d05f18586f0735fcdb7c524481
   subpackages:
@@ -34,11 +38,12 @@ imports:
   - internal/cbor
   - internal/json
   - log
+- name: github.com/sirupsen/logrus
+  version: 839c75faf7f98a33d445d181f3018b5c3409a45e
 - name: github.com/streadway/amqp
   version: 75d898a42a940fbc854dfd1a4199eabdc00cf024
-- name: gopkg.in/olivere/elastic.v2
-  version: 2cd27b9ae892f6b4dd8dd6d73489797c99e9c6fa
+- name: golang.org/x/sys
+  version: f49334f85ddcf0f08d7fb6dd7363e9e6d6b777eb
   subpackages:
-  - backoff
-  - uritemplates
+  - unix
 testImports: []
