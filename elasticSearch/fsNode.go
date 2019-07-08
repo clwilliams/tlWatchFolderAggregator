@@ -3,6 +3,7 @@ package elasticSearch
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	log "github.com/rs/zerolog/log"
 )
@@ -13,15 +14,28 @@ type FsNode struct {
 	Name  string `json:"name"`
 	IsDir string `json:"isDir"`
 	Path  string `json:"path"`
+	FilePath  string `json:"file_path"`
 }
 
 const docType = "doc"
 
+// GenerateUniqueID -
+func (fsNode *FsNode) GenerateUniqueID() string {
+	typePrefix := "file"
+	if (fsNode.IsDir == "true") {
+		typePrefix = "dir"
+	}
+	return fmt.Sprintf("%s_%s", typePrefix, fsNode.Path)
+}
+
 // Save - saves the document
 func (app *App) Save(fsNode FsNode) error {
+	fsNode.FilePath = fsNode.Path
 	ctx := context.Background()
-	response, err := app.Client.Index().Index(app.Index).
+	response, err := app.Client.Index().
+	  Index(app.Index).
 	  Type(docType).
+		Id(fsNode.GenerateUniqueID()).
 		BodyJson(fsNode).
 		Do(ctx)
 	if err != nil {

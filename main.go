@@ -173,10 +173,6 @@ func main() {
 	wg.Wait()
 	log.Printf("done.")
 
-	// Initialise the router so we can serve API requests
+	// Lastly initialise the router so we can serve API requests
 	server(esApp)
-
-	// start listening to the RabbitMQ queue & processing the folder / file messages
-	// TODO
-
 }

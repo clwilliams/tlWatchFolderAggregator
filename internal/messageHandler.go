@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/tlWatchFolderAggregator/elasticSearch"
@@ -12,10 +13,6 @@ import (
 // HandleFolderWatchUpdate -
 func HandleFolderWatchUpdate(config *elasticSearch.App) func(context.Context, []byte) error {
 	return func(ctx context.Context, msg []byte) error {
-		//stockMsg := struct {
-		//	SKU string `json:"sku"`
-		//	Qty int    `json:"qty"`
-		//}{}
 		folderWatchMsg := rabbitMQ.FolderWatch{}
 		if err := json.Unmarshal(msg, &folderWatchMsg); err != nil {
 			log.Errorf("Can't unmarshal FolderWatch update %v : %v", err, string(msg))
@@ -56,9 +53,15 @@ func HandleFolderWatchUpdate(config *elasticSearch.App) func(context.Context, []
   }
 */
 func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
+	pathParts := strings.Split(folderWatchMsg.Path, "/")
+	name := folderWatchMsg.Path
+	if (len(pathParts) > 1) {
+		name = pathParts[len(pathParts)-1]
+	}
+
 	fsNode := elasticSearch.FsNode{
 		ID:    folderWatchMsg.Path,
-		Name:  "",
+		Name:  name,
 		IsDir: folderWatchMsg.IsDir,
 		Path:  folderWatchMsg.Path,
 	}
