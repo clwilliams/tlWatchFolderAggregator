@@ -15,12 +15,13 @@ type FsNode struct {
 	Path  string `json:"path"`
 }
 
-const docType = "document"
+const docType = "doc"
 
 // Save - saves the document
 func (app *App) Save(fsNode FsNode) error {
 	ctx := context.Background()
 	response, err := app.Client.Index().Index(app.Index).
+	  Type(docType).
 		BodyJson(fsNode).
 		Do(ctx)
 	if err != nil {

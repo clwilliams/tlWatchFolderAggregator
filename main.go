@@ -93,9 +93,6 @@ func main() {
 	}
 	// defer esApp.Client.Close .es.Close()
 
-	// Initialise the router so we can serve API requests
-	server(esApp)
-
 	// Initialise Rabbit MQ
 	rabbitMqConnection, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", *rabbitMqUser, *rabbitMqPassword, *rabbitMqHost, *rabbitMqPort))
 	// (a) connection
@@ -103,14 +100,15 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ")
 	}
 	defer rabbitMqConnection.Close()
+
 	// (b) channel
 	rabbitMqChannel, err := rabbitMqConnection.Channel()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ Channel")
 	}
 	defer rabbitMqChannel.Close()
-	// (c) exchange
 
+	// (c) exchange
 	if err = rabbitMqChannel.ExchangeDeclare(*rabbitMqExchange, "topic", true, false, false, false, nil); err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ Topic")
 	}
@@ -119,18 +117,18 @@ func main() {
 	defer close(errLog)
 
 	var wg sync.WaitGroup
+
 	type bind struct {
 		queue   string
 		key     string
 		handler func(context.Context, []byte) error
 	}
-	// func HandleFolderWatchUpdate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
+
 	for _, binding := range []bind{
 		{*rabbitMqQueue, *rabbitMqRoutingKey, internal.HandleFolderWatchUpdate(esApp)},
 	} {
 		if _, err := rabbitMqChannel.QueueDeclare(binding.queue, true, false, false, false, nil); err != nil {
 			log.Error().Err(err).Str(binding.queue, binding.queue).Msg("Problem declaring queue")
-			// log.Errorf("Problem declaring queue %s: %v", binding.queue, err)
 		}
 		if err := rabbitMqChannel.QueueBind(binding.queue, binding.key, *rabbitMqExchange, false, nil); err != nil {
 			log.Error().Err(err).Str(binding.queue, binding.queue).Msg("Problem binding")
@@ -138,7 +136,6 @@ func main() {
 		if err := rabbitMqChannel.Qos(3, 0, false); err != nil {
 			log.Error().Err(err).Msg("Problem setting QOS")
 		}
-
 		deliveries, err := rabbitMqChannel.Consume(binding.queue, "", false, false, false, false, nil)
 		if err != nil {
 			log.Error().Err(err).Str(binding.queue, binding.queue).Msg("Problem setting consumer for")
@@ -175,6 +172,9 @@ func main() {
 	log.Printf("waiting...")
 	wg.Wait()
 	log.Printf("done.")
+
+	// Initialise the router so we can serve API requests
+	server(esApp)
 
 	// start listening to the RabbitMQ queue & processing the folder / file messages
 	// TODO
