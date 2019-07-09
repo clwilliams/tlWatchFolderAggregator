@@ -16,8 +16,8 @@ type App struct {
 	Client           *es.Client
 }
 
-// New -
-func New(verbose bool, esURL, esIndex string) (*App, error) {
+// Connect - connects to the es client, & creates the index if needed
+func Connect(verbose bool, esURL, esIndex string) (*App, error) {
 
 	ctx := context.Background()
 

@@ -7,13 +7,14 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/tlWatchFolderAggregator/elasticSearch"
-	"github.com/tlWatchFolderAggregator/rabbitMQ"
+
+	"github.com/tlCommonMessaging/rabbitMQ"
 )
 
 // HandleFolderWatchUpdate -
 func HandleFolderWatchUpdate(config *elasticSearch.App) func(context.Context, []byte) error {
 	return func(ctx context.Context, msg []byte) error {
-		folderWatchMsg := rabbitMQ.FolderWatch{}
+		folderWatchMsg := rabbitMQ.FolderWatchMessage{}
 		if err := json.Unmarshal(msg, &folderWatchMsg); err != nil {
 			log.Errorf("Can't unmarshal FolderWatch update %v : %v", err, string(msg))
 			return nil
@@ -52,18 +53,23 @@ func HandleFolderWatchUpdate(config *elasticSearch.App) func(context.Context, []
     IsDir:"false"
   }
 */
-func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
+func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatchMessage) error {
 	pathParts := strings.Split(folderWatchMsg.Path, "/")
 	name := folderWatchMsg.Path
-	if (len(pathParts) > 1) {
+	if len(pathParts) > 1 {
 		name = pathParts[len(pathParts)-1]
 	}
 
+	isWatchFolder := "false"
+	if folderWatchMsg.WatchFolder == folderWatchMsg.Path {
+		isWatchFolder = "true"
+	}
+
 	fsNode := elasticSearch.FsNode{
-		ID:    folderWatchMsg.Path,
-		Name:  name,
-		IsDir: folderWatchMsg.IsDir,
-		Path:  folderWatchMsg.Path,
+		Name:          name,
+		IsDir:         folderWatchMsg.IsDir,
+		Path:          folderWatchMsg.Path,
+		IsWatchFolder: isWatchFolder,
 	}
 	err := config.Save(fsNode)
 	if err != nil {
@@ -81,7 +87,7 @@ func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
     IsDir:"false"
   }
 */
-func handleDelete(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
+func handleDelete(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatchMessage) error {
 	err := config.Delete(folderWatchMsg.Path)
 	if err != nil {
 		return err
@@ -98,7 +104,7 @@ func handleDelete(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
     IsDir:"false"
   }
 */
-func handleRename(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
+func handleRename(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatchMessage) error {
 	return nil
 }
 
@@ -111,6 +117,6 @@ func handleRename(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
     IsDir:"false"
   }
 */
-func handleMove(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatch) error {
+func handleMove(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatchMessage) error {
 	return nil
 }

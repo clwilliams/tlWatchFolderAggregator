@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	log "github.com/rs/zerolog/log"
-	"github.com/streadway/amqp"
+	"github.com/tlCommonMessaging/rabbitMQ"
 	"github.com/tlWatchFolderAggregator/elasticSearch"
 	"github.com/tlWatchFolderAggregator/internal"
 
@@ -60,7 +60,7 @@ func server(esApp *elasticSearch.App) {
 	router := mux.NewRouter().StrictSlash(true)
 
 	// routes we're going to handle
-	router.Handle("/get", internal.GetAll(esApp)).Methods("GET")
+	router.Handle("/all", internal.GetAll(esApp)).Methods("GET")
 
 	host := fmt.Sprintf(":%s", *apiPort)
 	log.Printf("Listening on %s...\n", host)
@@ -87,22 +87,22 @@ func main() {
 	}
 
 	// Initialise elastic search
-	esApp, err := elasticSearch.New(*verbose, *elasticURL, *elasticIndex)
+	esApp, err := elasticSearch.Connect(*verbose, *elasticURL, *elasticIndex)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to ElasticSearch")
 	}
 	// defer esApp.Client.Close .es.Close()
 
 	// Initialise Rabbit MQ
-	rabbitMqConnection, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", *rabbitMqUser, *rabbitMqPassword, *rabbitMqHost, *rabbitMqPort))
-	// (a) connection
+	rabbitMQClient := rabbitMQ.MessageClient{}
+	err = rabbitMQClient.Connect(rabbitMqHost, rabbitMqPort, rabbitMqUser, rabbitMqPassword)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ")
 	}
-	defer rabbitMqConnection.Close()
+	defer rabbitMQClient.Connection.Close()
 
 	// (b) channel
-	rabbitMqChannel, err := rabbitMqConnection.Channel()
+	rabbitMqChannel, err := rabbitMQClient.Connection.Channel()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ Channel")
 	}
