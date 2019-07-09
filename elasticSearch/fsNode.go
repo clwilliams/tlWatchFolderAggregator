@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+  "github.com/olivere/elastic"
 	log "github.com/rs/zerolog/log"
 )
 
@@ -59,9 +60,47 @@ func (app *App) Delete(id string) error {
 
 // GetAllFsNodes returns a list of all FsNodes
 func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
+	log.Debug().Msg("START - elasticSearch.GetAllFsNodes")
 	ctx := context.Background()
-	query := `"match_all": {}`
-	results, err := app.Client.Search().Index(app.Index).Source(query).Do(ctx)
+	results, err := app.Client.
+	  Search().
+		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("path")).
+	  Index(app.Index).
+		Source(elastic.NewMatchAllQuery()).
+		Sort("path", true).
+		Do(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// process results
+	var fsNodes []FsNode
+	for _, hit := range results.Hits.Hits {
+		var fsn FsNode
+		json.Unmarshal(*hit.Source, &fsn)
+		fsNodes = append(fsNodes, fsn)
+	}
+
+	log.Debug().Msg("END - elasticSearch.GetAllFsNodes")
+	return fsNodes, results.Hits.TotalHits, nil
+}
+
+// GetFsNodesForWatchFolder -
+func (app *App) GetFsNodesForWatchFolder(folderPath string) ([]FsNode, int64, error) {
+	ctx := context.Background()
+/*
+	ss := elastic.NewSearchSource().Query(
+		elastic.NewPrefixQuery("path", folderPath))
+data, _ := json.Marshal(ss.Source())
+fmt.Printf("%s", string(data))
+*/
+	results, err := app.Client.Search().
+		// FetchSourceContext(elastic.NewFetchSourceContext(true).Include("path")).
+		Index(app.Index).
+		Query(elastic.NewPrefixQuery("path", folderPath)).
+		Sort("path", true).
+		Pretty(true).
+		Do(ctx)
 	if err != nil {
 		return nil, 0, err
 	}

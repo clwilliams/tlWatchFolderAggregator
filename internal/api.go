@@ -5,12 +5,15 @@ import (
 	"net/http"
 	"strconv"
 
+	log "github.com/rs/zerolog/log"
+
 	"github.com/tlWatchFolderAggregator/elasticSearch"
 )
 
 // GetAll returns a list of articles
 func GetAll(config *elasticSearch.App) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Debug().Msg("START - api.GetAll")
 		corsResponseHeader(w, false)
 
 		fsNodes, totalHits, err := config.GetAllFsNodes()
@@ -24,6 +27,32 @@ func GetAll(config *elasticSearch.App) http.Handler {
 		}
 		corsResponseHeaderTotalCount(w, totalHits)
 		w.Write(js)
+		log.Debug().Msg("END - api.GetAll")
+	})
+}
+
+// GetFsNodesForWatchFolder returns a list of articles
+func GetFsNodesForWatchFolder(config *elasticSearch.App) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Debug().Msg("START - api.GetAll")
+		corsResponseHeader(w, false)
+
+    folder, ok := r.URL.Query()["folder"]
+    if !ok {
+      http.Error(w, "folder must be passed in", http.StatusInternalServerError)
+		}
+		fsNodes, totalHits, err := config.GetFsNodesForWatchFolder(folder[0])
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		js, err := json.Marshal(fsNodes)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		corsResponseHeaderTotalCount(w, totalHits)
+		w.Write(js)
+		log.Debug().Msg("END - api.GetAll")
 	})
 }
 

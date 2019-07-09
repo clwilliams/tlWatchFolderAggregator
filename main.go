@@ -57,15 +57,16 @@ func init() {
 }
 
 func server(esApp *elasticSearch.App) {
-	router := mux.NewRouter().StrictSlash(true)
+	router := mux.NewRouter()
 
 	// routes we're going to handle
 	router.Handle("/all", internal.GetAll(esApp)).Methods("GET")
+	router.Handle("/watch", internal.GetFsNodesForWatchFolder(esApp)).Methods("GET")
 
 	host := fmt.Sprintf(":%s", *apiPort)
 	log.Printf("Listening on %s...\n", host)
 	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
-	stdlog.Fatal(http.ListenAndServe(host, loggedRouter))
+	stdlog.Fatal(http.ListenAndServe(":8000", loggedRouter))
 }
 
 func main() {
@@ -149,11 +150,13 @@ func main() {
 				ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*handlerTimeout)*time.Millisecond)
 				if err := binding.handler(ctx, delivery.Body); err != nil {
 					log.Printf("ErrLogging")
+					/*
 					errLog <- err
 					if err := delivery.Nack(false, false); err != nil { // TODO - requeue?
 						errLog <- err
 					}
 					log.Printf("Aborting %v", binding.queue)
+					*/
 				}
 				if err := delivery.Ack(false); err != nil {
 					errLog <- err
@@ -162,7 +165,7 @@ func main() {
 			}
 		}(binding)
 	}
-
+/*
 	go func() {
 		log.Printf("reading error log")
 		for err := range errLog {
@@ -172,6 +175,7 @@ func main() {
 	log.Printf("waiting...")
 	wg.Wait()
 	log.Printf("done.")
+	*/
 
 	// Lastly initialise the router so we can serve API requests
 	server(esApp)
