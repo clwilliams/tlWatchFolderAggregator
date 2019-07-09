@@ -9,20 +9,16 @@ const tlFolderWatchMapping = `{
     "doc": {
       "properties" : {
         "name" : {
-          "type" : "text",
-          "index" : true
+          "type" : "keyword"
         },
         "path" : {
           "type" : "text",
-          "index" : true
         },
         "isDir" : {
-          "type" : "text",
-          "index" : false
+          "type" : "keyword"
         },
         "isWatchFolder" : {
-          "type" : "text",
-          "index" : true
+          "type" : "keyword"
         }
       }
     }

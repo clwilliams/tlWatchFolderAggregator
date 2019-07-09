@@ -68,7 +68,7 @@ func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
 	fsNode := elasticSearch.FsNode{
 		Name:          name,
 		IsDir:         folderWatchMsg.IsDir,
-		Path:          folderWatchMsg.Path,
+		FullPath:      folderWatchMsg.Path,
 		IsWatchFolder: isWatchFolder,
 	}
 	err := config.Save(fsNode)
@@ -88,7 +88,7 @@ func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
   }
 */
 func handleDelete(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatchMessage) error {
-	err := config.Delete(folderWatchMsg.Path)
+	err := config.Delete(folderWatchMsg.GenerateUniqueID())
 	if err != nil {
 		return err
 	}

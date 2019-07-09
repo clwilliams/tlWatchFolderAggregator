@@ -13,7 +13,7 @@ import (
 type FsNode struct {
 	Name          string `json:"name"`
 	IsDir         string `json:"isDir"`
-	Path          string `json:"path"`
+	FullPath      string `json:"fullPath"`
 	IsWatchFolder string `json:"isWatchFolder"`
 }
 
@@ -25,7 +25,7 @@ func (fsNode *FsNode) GenerateUniqueID() string {
 	if fsNode.IsDir == "true" {
 		typePrefix = "dir"
 	}
-	return fmt.Sprintf("%s_%s", typePrefix, fsNode.Path)
+	return fmt.Sprintf("%s_%s", typePrefix, fsNode.FullPath)
 }
 
 // Save - saves the document
@@ -64,7 +64,7 @@ func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
 	ctx := context.Background()
 	results, err := app.Client.
 	  Search().
-		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("path")).
+		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("fullPath")).
 	  Index(app.Index).
 		Source(elastic.NewMatchAllQuery()).
 		Sort("path", true).
@@ -94,11 +94,16 @@ func (app *App) GetFsNodesForWatchFolder(folderPath string) ([]FsNode, int64, er
 data, _ := json.Marshal(ss.Source())
 fmt.Printf("%s", string(data))
 */
+
+	q := elastic.NewPrefixQuery("fullPath", folderPath)
+	// q = q.QueryName("my_query_name")
+
 	results, err := app.Client.Search().
-		// FetchSourceContext(elastic.NewFetchSourceContext(true).Include("path")).
+		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("fullPath")).
 		Index(app.Index).
-		Query(elastic.NewPrefixQuery("path", folderPath)).
-		Sort("path", true).
+		Query(q).
+		//Source(elastic.NewPrefixQuery("path", folderPath)).
+		//Sort("path", true).
 		Pretty(true).
 		Do(ctx)
 	if err != nil {
