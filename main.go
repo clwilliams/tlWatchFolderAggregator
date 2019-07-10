@@ -87,12 +87,11 @@ func main() {
 		log.Debug().Msg("Set logging to verbose")
 	}
 
-	// Initialise elastic search
 	esApp, err := elasticSearch.Connect(*verbose, *elasticURL, *elasticIndex)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to ElasticSearch")
 	}
-	// defer esApp.Client.Close .es.Close()
+  // defer esApp.Client.Stop()
 
 	// Initialise Rabbit MQ
 	rabbitMQClient := rabbitMQ.MessageClient{}
@@ -179,4 +178,12 @@ func main() {
 
 	// Lastly initialise the router so we can serve API requests
 	server(esApp)
+}
+
+type elasticLog struct {
+	zerolog zerolog.Logger
+}
+
+func (el elasticLog) Printf(format string, vals ...interface{}) {
+	el.zerolog.Printf(format, vals...)
 }

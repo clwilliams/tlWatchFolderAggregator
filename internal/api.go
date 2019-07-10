@@ -18,11 +18,13 @@ func GetAll(config *elasticSearch.App) http.Handler {
 
 		fsNodes, totalHits, err := config.GetAllFsNodes()
 		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to get all JSON")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
 		js, err := json.Marshal(fsNodes)
 		if err != nil {
+			log.Fatal().Err(err).Msg("Error marshalling")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		corsResponseHeaderTotalCount(w, totalHits)

@@ -4,6 +4,8 @@ import (
 	"context"
 
 	es "github.com/olivere/elastic"
+	"github.com/rs/zerolog"
+	log "github.com/rs/zerolog/log"
 )
 
 type hash map[string]interface{}
@@ -21,8 +23,20 @@ func Connect(verbose bool, esURL, esIndex string) (*App, error) {
 
 	ctx := context.Background()
 
+	// Initialise elastic search
+	var esTraceLog es.Logger
+	if verbose {
+		esTraceLog = elasticLog{log.Logger}
+	}
+
 	// connect to the elastic search client
-	client, err := es.NewClient(es.SetSniff(false))
+	client, err := es.NewClient(
+	  // es.SetURL(esURL),
+		es.SetErrorLog(elasticLog{log.Logger}),
+		es.SetTraceLog(esTraceLog),
+		es.SetSniff(false),
+		es.SetHealthcheck(false),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -69,4 +83,12 @@ func createIndex(ctx context.Context, client *es.Client, indexName, mapping stri
 		// Not acknowledged
 	}
 	return nil
+}
+
+type elasticLog struct {
+	zerolog zerolog.Logger
+}
+
+func (el elasticLog) Printf(format string, vals ...interface{}) {
+	el.zerolog.Printf(format, vals...)
 }
