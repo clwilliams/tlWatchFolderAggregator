@@ -99,18 +99,13 @@ func main() {
 	}
 	defer rabbitMQClient.Connection.Close()
 
-	// (b) channel
-	rabbitMqChannel, err := rabbitMQClient.Connection.Channel()
+	err = rabbitMQClient.ConfigureChannelAndExchange(rabbitMqExchange)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ Channel")
+		log.Fatal().Err(err).Msg("Failed to configure RabbitMQ Channel / Exchange")
 	}
-	defer rabbitMqChannel.Close()
+	defer rabbitMQClient.Channel.Close()
 
-	// (c) exchange
-	if err = rabbitMqChannel.ExchangeDeclare(*rabbitMqExchange, "topic", true, false, false, false, nil); err != nil {
-		log.Fatal().Err(err).Msg("Failed to connect to RabbitMQ Topic")
-	}
-
+	// our error log to process any errors raised when processing the messages
 	errLog := make(chan error)
 	defer close(errLog)
 
@@ -123,16 +118,16 @@ func main() {
 	for _, binding := range []bind{
 		{*rabbitMqQueue, *rabbitMqRoutingKey, internal.HandleFolderWatchUpdate(esApp)},
 	} {
-		if _, err := rabbitMqChannel.QueueDeclare(binding.queue, true, false, false, false, nil); err != nil {
+		if _, err := rabbitMQClient.Channel.QueueDeclare(binding.queue, true, false, false, false, nil); err != nil {
 			log.Error().Err(err).Str(binding.queue, binding.queue).Msg("Problem declaring queue")
 		}
-		if err := rabbitMqChannel.QueueBind(binding.queue, binding.key, *rabbitMqExchange, false, nil); err != nil {
+		if err := rabbitMQClient.Channel.QueueBind(binding.queue, binding.key, *rabbitMqExchange, false, nil); err != nil {
 			log.Error().Err(err).Str(binding.queue, binding.queue).Msg("Problem binding")
 		}
-		if err := rabbitMqChannel.Qos(3, 0, false); err != nil {
+		if err := rabbitMQClient.Channel.Qos(3, 0, false); err != nil {
 			log.Error().Err(err).Msg("Problem setting QOS")
 		}
-		deliveries, err := rabbitMqChannel.Consume(binding.queue, "", false, false, false, false, nil)
+		deliveries, err := rabbitMQClient.Channel.Consume(binding.queue, "", false, false, false, false, nil)
 		if err != nil {
 			log.Error().Err(err).Str(binding.queue, binding.queue).Msg("Problem setting consumer for")
 		}

@@ -58,6 +58,22 @@ func (app *App) Delete(id string) error {
 	return nil
 }
 
+// Get - gets a document from the index given its id
+func (app *App) Get(id string) (FsNode, error) {
+	ctx := context.Background()
+	doc, err := app.Client.Get().
+		Index(app.Index).
+		Type(docType).
+		Id(id).
+		Do(ctx)
+	if err != nil {
+		return FsNode{}, err
+	}
+	var fsNode FsNode
+	json.Unmarshal(*doc.Source, &fsNode)
+	return fsNode, nil
+}
+
 // GetAllFsNodes returns a list of all FsNodes, ordered by folder path
 func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
 	log.Debug().Msg("START - elasticSearch.GetAllFsNodes")

@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -14,10 +15,15 @@ import (
 // HandleFolderWatchUpdate -
 func HandleFolderWatchUpdate(config *elasticSearch.App) func(context.Context, []byte) error {
 	return func(ctx context.Context, msg []byte) error {
+
 		folderWatchMsg := rabbitMQ.FolderWatchMessage{}
 		if err := json.Unmarshal(msg, &folderWatchMsg); err != nil {
 			log.Errorf("Can't unmarshal FolderWatch update %v : %v", err, string(msg))
 			return nil
+		}
+
+		if config.Verbose {
+			log.Infof("HandleFolderWatchUpdate for %#v", folderWatchMsg)
 		}
 
 		switch folderWatchMsg.Action {
@@ -73,7 +79,7 @@ func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
 	}
 	err := config.Save(fsNode)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error saving document %v", err)
 	}
 	return nil
 }
@@ -88,9 +94,13 @@ func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
   }
 */
 func handleDelete(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatchMessage) error {
-	err := config.Delete(folderWatchMsg.GenerateUniqueID())
+	id := folderWatchMsg.GenerateUniqueID()
+	if config.Verbose {
+		log.Infof("handleDelete for id %#v", id)
+	}
+	err := config.Delete(id)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error deleting document with ID %s %v", id, err)
 	}
 	return nil
 }
@@ -105,6 +115,28 @@ func handleDelete(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
   }
 */
 func handleRename(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatchMessage) error {
+	paths := strings.Split(folderWatchMsg.Path, " -> ")
+
+	originalArg := rabbitMQ.FolderWatchMessage{Path: paths[0]}
+	originalDoc, err := config.Get(originalArg.GenerateUniqueID())
+	if err != nil {
+		return fmt.Errorf("error getting document for ID %s %v", originalArg.GenerateUniqueID(), err)
+	}
+
+	// delete the original
+	err = config.Delete(originalArg.GenerateUniqueID())
+	if err != nil {
+		return fmt.Errorf("Error deleting document with ID %s %v", originalArg.GenerateUniqueID(), err)
+	}
+
+	// save with the new path applied
+	// newArg := FolderWatchMessage{Path: paths[1]}
+	originalDoc.FullPath = paths[1]
+	err = config.Save(originalDoc)
+	if err != nil {
+		return fmt.Errorf("Error saving document with ID %s %v", paths[1], err)
+	}
+
 	return nil
 }
 
@@ -118,5 +150,5 @@ func handleRename(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
   }
 */
 func handleMove(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatchMessage) error {
-	return nil
+	return handleRename(config, folderWatchMsg)
 }
