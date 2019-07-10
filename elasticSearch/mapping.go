@@ -11,8 +11,9 @@ const tlFolderWatchMapping = `{
         "name" : {
           "type" : "keyword"
         },
-        "path" : {
+        "fullPath" : {
           "type" : "text",
+          "fielddata": true
         },
         "isDir" : {
           "type" : "keyword"

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-  "github.com/olivere/elastic"
+	"github.com/olivere/elastic"
 	log "github.com/rs/zerolog/log"
 )
 
@@ -62,12 +62,13 @@ func (app *App) Delete(id string) error {
 func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
 	log.Debug().Msg("START - elasticSearch.GetAllFsNodes")
 	ctx := context.Background()
+	q := elastic.NewMatchAllQuery()
 	results, err := app.Client.
-	  Search().
-		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("fullPath")).
-	  Index(app.Index).
-		Source(elastic.NewMatchAllQuery()).
-		Sort("path", true).
+		Search().
+		// FetchSourceContext(elastic.NewFetchSourceContext(true).Include("fullPath")).
+		Index(app.Index).
+		Query(q).
+		Sort("fullPath", true).
 		Do(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -88,22 +89,13 @@ func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
 // GetFsNodesForWatchFolder -
 func (app *App) GetFsNodesForWatchFolder(folderPath string) ([]FsNode, int64, error) {
 	ctx := context.Background()
-/*
-	ss := elastic.NewSearchSource().Query(
-		elastic.NewPrefixQuery("path", folderPath))
-data, _ := json.Marshal(ss.Source())
-fmt.Printf("%s", string(data))
-*/
 
 	q := elastic.NewPrefixQuery("fullPath", folderPath)
-	// q = q.QueryName("my_query_name")
-
 	results, err := app.Client.Search().
 		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("fullPath")).
 		Index(app.Index).
 		Query(q).
-		//Source(elastic.NewPrefixQuery("path", folderPath)).
-		//Sort("path", true).
+		Sort("fullPath", true).
 		Pretty(true).
 		Do(ctx)
 	if err != nil {
