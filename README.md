@@ -104,7 +104,7 @@ Example response
 ]
 ```
 
-Or retrieve for a specific watch folder:
+Or retrieve for a specific folder (can be by the watch folder specifically, but can also be by any folder path you choose):
 ```
 curl -X GET http://localhost:8000/watch?folder=%2FUsers%2Fclairew%2Fwatch_me%2F2019%2F03
 ```
