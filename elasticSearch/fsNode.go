@@ -58,17 +58,16 @@ func (app *App) Delete(id string) error {
 	return nil
 }
 
-// GetAllFsNodes returns a list of all FsNodes
+// GetAllFsNodes returns a list of all FsNodes, ordered by folder path
 func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
 	log.Debug().Msg("START - elasticSearch.GetAllFsNodes")
 	ctx := context.Background()
 	q := elastic.NewMatchAllQuery()
 	results, err := app.Client.
 		Search().
-		// FetchSourceContext(elastic.NewFetchSourceContext(true).Include("fullPath")).
 		Index(app.Index).
 		Query(q).
-		Sort("fullPath", true).
+		Sort("fullPath.keyword", true).
 		Do(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -86,17 +85,16 @@ func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
 	return fsNodes, results.Hits.TotalHits, nil
 }
 
-// GetFsNodesForWatchFolder -
+// GetFsNodesForWatchFolder - given the start of a folder path, returns all
+// documents that start with that folderpath, ordered by folder path
 func (app *App) GetFsNodesForWatchFolder(folderPath string) ([]FsNode, int64, error) {
 	ctx := context.Background()
 
-	q := elastic.NewPrefixQuery("fullPath", folderPath)
+	q := elastic.NewPrefixQuery("fullPath.tree", folderPath)
 	results, err := app.Client.Search().
-		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("fullPath")).
 		Index(app.Index).
 		Query(q).
-		Sort("fullPath", true).
-		Pretty(true).
+		Sort("fullPath.keyword", true).
 		Do(ctx)
 	if err != nil {
 		return nil, 0, err

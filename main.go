@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"sync"
 	"time"
 
 	stdlog "log"
@@ -71,7 +70,6 @@ func server(esApp *elasticSearch.App) {
 
 func main() {
 	// parse the command line arguments
-	// kingpin.Version(version.Get())
 	kingpin.Parse()
 
 	// Initialise Logging
@@ -91,7 +89,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to ElasticSearch")
 	}
-  // defer esApp.Client.Stop()
+	// defer esApp.Client.Stop()
 
 	// Initialise Rabbit MQ
 	rabbitMQClient := rabbitMQ.MessageClient{}
@@ -116,8 +114,6 @@ func main() {
 	errLog := make(chan error)
 	defer close(errLog)
 
-	var wg sync.WaitGroup
-
 	type bind struct {
 		queue   string
 		key     string
@@ -141,21 +137,17 @@ func main() {
 			log.Error().Err(err).Str(binding.queue, binding.queue).Msg("Problem setting consumer for")
 		}
 
-		wg.Add(1)
 		go func(binding bind) {
-			defer wg.Done()
 			for delivery := range deliveries {
 				log.Printf("Reading on %v", binding.queue)
 				ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*handlerTimeout)*time.Millisecond)
 				if err := binding.handler(ctx, delivery.Body); err != nil {
 					log.Printf("ErrLogging")
-					/*
 					errLog <- err
 					if err := delivery.Nack(false, false); err != nil { // TODO - requeue?
 						errLog <- err
 					}
 					log.Printf("Aborting %v", binding.queue)
-					*/
 				}
 				if err := delivery.Ack(false); err != nil {
 					errLog <- err
@@ -164,7 +156,7 @@ func main() {
 			}
 		}(binding)
 	}
-/*
+
 	go func() {
 		log.Printf("reading error log")
 		for err := range errLog {
@@ -172,18 +164,8 @@ func main() {
 		}
 	}()
 	log.Printf("waiting...")
-	wg.Wait()
 	log.Printf("done.")
-	*/
 
 	// Lastly initialise the router so we can serve API requests
 	server(esApp)
-}
-
-type elasticLog struct {
-	zerolog zerolog.Logger
-}
-
-func (el elasticLog) Printf(format string, vals ...interface{}) {
-	el.zerolog.Printf(format, vals...)
 }

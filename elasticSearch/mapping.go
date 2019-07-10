@@ -3,7 +3,20 @@ package elasticSearch
 const tlFolderWatchMapping = `{
   "settings": {
     "number_of_shards" : 1,
-    "number_of_replicas" : 0
+    "number_of_replicas" : 0,
+    "analysis": {
+      "analyzer": {
+        "custom_path_tree": {
+          "tokenizer": "custom_hierarchy"
+        }
+      },
+      "tokenizer": {
+        "custom_hierarchy": {
+          "type": "path_hierarchy",
+          "delimiter": "/"
+        }
+      }
+    }
   },
   "mappings" : {
     "doc": {
@@ -13,7 +26,15 @@ const tlFolderWatchMapping = `{
         },
         "fullPath" : {
           "type" : "text",
-          "fielddata": true
+          "fields": {
+            "tree": {
+              "type": "text",
+              "analyzer": "custom_path_tree"
+            },
+            "keyword": {
+              "type": "keyword"
+            }
+          }
         },
         "isDir" : {
           "type" : "keyword"
