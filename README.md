@@ -38,7 +38,96 @@ Get a JSON list of all the files and folders, ordered by path:
 ```
 curl -X GET http://localhost:8000/all
 ```
+Example response
+```
+[  
+   {  
+      "name":"watch_me",
+      "isDir":"true",
+      "fullPath":"/Users/clairew/watch_me",
+      "isWatchFolder":"true"
+   },
+   {  
+      "name":"2019",
+      "isDir":"true",
+      "fullPath":"/Users/clairew/watch_me/2019",
+      "isWatchFolder":"false"
+   },
+   {  
+      "name":"03 March",
+      "isDir":"true",
+      "fullPath":"/Users/clairew/watch_me/2019/03 March",
+      "isWatchFolder":"false"
+   },
+   {  
+      "name":"abc",
+      "isDir":"true",
+      "fullPath":"/Users/clairew/watch_me/2019/03 March/abc",
+      "isWatchFolder":"false"
+   },
+   {  
+      "name":"de Gournay Chinoiserie C076 Chatsworth.pdf",
+      "isDir":"false",
+      "fullPath":"/Users/clairew/watch_me/2019/03 March/de Gournay Chinoiserie C076 Chatsworth.pdf",
+      "isWatchFolder":"false"
+   },
+   {  
+      "name":"04 April",
+      "isDir":"true",
+      "fullPath":"/Users/clairew/watch_me/2019/04 April",
+      "isWatchFolder":"false"
+   },
+   {  
+      "name":"05 May",
+      "isDir":"true",
+      "fullPath":"/Users/clairew/watch_me/2019/04 April/05 May",
+      "isWatchFolder":"false"
+   },
+   {  
+      "name":"de Gournay Chinoiserie  C078 Badminton.pdf",
+      "isDir":"false",
+      "fullPath":"/Users/clairew/watch_me/2019/04 April/de Gournay Chinoiserie  C078 Badminton.pdf",
+      "isWatchFolder":"false"
+   },
+   {  
+      "name":"de Gournay Chinoiserie C076 Chatsworth.pdf",
+      "isDir":"false",
+      "fullPath":"/Users/clairew/watch_me/2019/04 April/de Gournay Chinoiserie C076 Chatsworth.pdf",
+      "isWatchFolder":"false"
+   },
+   {  
+      "name":"de Gournay Chinoiserie cC075 Jardinières \u0026 Citrus Trees.pdf",
+      "isDir":"false",
+      "fullPath":"/Users/clairew/watch_me/2019/04 April/de Gournay Chinoiserie cC075 Jardinières \u0026 Citrus Trees.pdf",
+      "isWatchFolder":"false"
+   }
+]
+```
+
 Or retrieve for a specific watch folder:
 ```
-curl -X GET http://localhost:8000/watch?folder=%2Fusers%2Fclairew%2Fwatch_me
+curl -X GET http://localhost:8000/watch?folder=%2FUsers%2Fclairew%2Fwatch_me%2F2019%2F03
+```
+example response:
+```
+[  
+   {  
+      "name":"03 March",
+      "isDir":"true",
+      "fullPath":"/Users/clairew/watch_me/2019/03 March",
+      "isWatchFolder":"false"
+   },
+   {  
+      "name":"abc",
+      "isDir":"true",
+      "fullPath":"/Users/clairew/watch_me/2019/03 March/abc",
+      "isWatchFolder":"false"
+   },
+   {  
+      "name":"de Gournay Chinoiserie C076 Chatsworth.pdf",
+      "isDir":"false",
+      "fullPath":"/Users/clairew/watch_me/2019/03 March/de Gournay Chinoiserie C076 Chatsworth.pdf",
+      "isWatchFolder":"false"
+   }
+]
 ```
