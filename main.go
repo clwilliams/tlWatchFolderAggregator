@@ -152,7 +152,7 @@ func main() {
 					// add to the error log
 					errLog <- err
 					// and negatively acknowledge message processing
-					if err := delivery.Nack(false, false); err != nil { // TODO - requeue?
+					if err := delivery.Nack(false, false); err != nil {
 						errLog <- err
 					}
 					log.Printf("Aborting %v", binding.queue)
