@@ -16,7 +16,7 @@ You need to have the latest docker installed. Then
 ```
 docker-compose up
 ```
- - Local RabbitMQ  http://localhost:15672
+ - Local RabbitMQ  http://localhost:15672 (username: rabbitmq | password: rabbitmq)
 
  - ElasticSearch head  http://localhost:9100/
 

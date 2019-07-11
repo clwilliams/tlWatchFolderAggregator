@@ -13,35 +13,32 @@ import (
 // GetAll returns a list of articles
 func GetAll(config *elasticSearch.App) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Debug().Msg("START - api.GetAll")
 		corsResponseHeader(w, false)
 
 		fsNodes, totalHits, err := config.GetAllFsNodes()
 		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to get all JSON")
+			log.Fatal().Err(err).Msg("Failed to retrieve all the documents from elastic search")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
 		js, err := json.Marshal(fsNodes)
 		if err != nil {
-			log.Fatal().Err(err).Msg("Error marshalling")
+			log.Fatal().Err(err).Msg("Error marshalling elastic search documents")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		corsResponseHeaderTotalCount(w, totalHits)
 		w.Write(js)
-		log.Debug().Msg("END - api.GetAll")
 	})
 }
 
 // GetFsNodesForWatchFolder returns a list of articles
 func GetFsNodesForWatchFolder(config *elasticSearch.App) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Debug().Msg("START - api.GetAll")
 		corsResponseHeader(w, false)
 
-    folder, ok := r.URL.Query()["folder"]
-    if !ok {
-      http.Error(w, "folder must be passed in", http.StatusInternalServerError)
+		folder, ok := r.URL.Query()["folder"]
+		if !ok {
+			http.Error(w, "folder argument must be set", http.StatusInternalServerError)
 		}
 		fsNodes, totalHits, err := config.GetFsNodesForWatchFolder(folder[0])
 		if err != nil {
@@ -54,7 +51,6 @@ func GetFsNodesForWatchFolder(config *elasticSearch.App) http.Handler {
 		}
 		corsResponseHeaderTotalCount(w, totalHits)
 		w.Write(js)
-		log.Debug().Msg("END - api.GetAll")
 	})
 }
 

@@ -3,7 +3,6 @@ package elasticSearch
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/olivere/elastic"
 	log "github.com/rs/zerolog/log"
@@ -19,22 +18,13 @@ type FsNode struct {
 
 const docType = "doc"
 
-// GenerateUniqueID -
-func (fsNode *FsNode) GenerateUniqueID() string {
-	typePrefix := "file"
-	if fsNode.IsDir == "true" {
-		typePrefix = "dir"
-	}
-	return fmt.Sprintf("%s_%s", typePrefix, fsNode.FullPath)
-}
-
-// Save - saves the document
-func (app *App) Save(fsNode FsNode) error {
+// Save - saves the document to elastic search
+func (app *App) Save(fsNode FsNode, id string) error {
 	ctx := context.Background()
 	response, err := app.Client.Index().
 		Index(app.Index).
 		Type(docType).
-		Id(fsNode.GenerateUniqueID()).
+		Id(id).
 		BodyJson(fsNode).
 		Do(ctx)
 	if err != nil {
@@ -76,7 +66,6 @@ func (app *App) Get(id string) (FsNode, error) {
 
 // GetAllFsNodes returns a list of all FsNodes, ordered by folder path
 func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
-	log.Debug().Msg("START - elasticSearch.GetAllFsNodes")
 	ctx := context.Background()
 	q := elastic.NewMatchAllQuery()
 	results, err := app.Client.
@@ -84,6 +73,7 @@ func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
 		Index(app.Index).
 		Query(q).
 		Sort("fullPath.keyword", true).
+		Pretty(true).
 		Do(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -97,7 +87,6 @@ func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
 		fsNodes = append(fsNodes, fsn)
 	}
 
-	log.Debug().Msg("END - elasticSearch.GetAllFsNodes")
 	return fsNodes, results.Hits.TotalHits, nil
 }
 
@@ -106,11 +95,14 @@ func (app *App) GetAllFsNodes() ([]FsNode, int64, error) {
 func (app *App) GetFsNodesForWatchFolder(folderPath string) ([]FsNode, int64, error) {
 	ctx := context.Background()
 
+	// full path is stroed in elastic search using path_hierarchy tokeniser, see
+	// https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-pathhierarchy-tokenizer.html
 	q := elastic.NewPrefixQuery("fullPath.tree", folderPath)
 	results, err := app.Client.Search().
 		Index(app.Index).
 		Query(q).
 		Sort("fullPath.keyword", true).
+		Pretty(true).
 		Do(ctx)
 	if err != nil {
 		return nil, 0, err
