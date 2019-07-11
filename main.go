@@ -94,7 +94,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to ElasticSearch")
 	}
-	// defer esApp.Client.Stop()
+	defer esApp.Client.Stop()
 
 	// Initialise Rabbit MQ
 	rabbitMQClient := rabbitMQ.MessageClient{}
