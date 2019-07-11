@@ -9,13 +9,13 @@ import (
 	stdlog "log"
 
 	"github.com/alecthomas/kingpin"
+	"github.com/clwilliams/tlCommonMessaging/rabbitMQ"
+	"github.com/clwilliams/tlWatchFolderAggregator/elasticSearch"
+	"github.com/clwilliams/tlWatchFolderAggregator/internal"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	log "github.com/rs/zerolog/log"
-	"github.com/tlCommonMessaging/rabbitMQ"
-	"github.com/tlWatchFolderAggregator/elasticSearch"
-	"github.com/tlWatchFolderAggregator/internal"
 
 	"net/http"
 )

@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/tlWatchFolderAggregator/elasticSearch"
+	"github.com/clwilliams/tlWatchFolderAggregator/elasticSearch"
 
-	"github.com/tlCommonMessaging/rabbitMQ"
+	"github.com/clwilliams/tlCommonMessaging/rabbitMQ"
 )
 
 // HandleFolderWatchUpdate - given the message body from RabbitMQ, marshall

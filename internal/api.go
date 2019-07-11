@@ -7,7 +7,7 @@ import (
 
 	log "github.com/rs/zerolog/log"
 
-	"github.com/tlWatchFolderAggregator/elasticSearch"
+	"github.com/clwilliams/tlWatchFolderAggregator/elasticSearch"
 )
 
 // GetAll returns a list of articles
