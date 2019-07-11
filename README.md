@@ -1,16 +1,16 @@
 ## Brief summary
 
-* tlWatchFolderAggregator - project for consuming message from Rabbit MQ & storing in elastic search. Also serves the API for the JSON calls.
+* [tlWatchFolderAggregator](https://github.com/clwilliams/tlWatchFolderAggregator) - project for consuming messages from Rabbit MQ & storing file / folder data in elastic search. Also serves the API for the JSON calls.
 
-* tlWatchFolder - project for watching a given folder and sending messages to RabbitMQ
+* [tlWatchFolder](https://github.com/clwilliams/tlWatchFolder) - project for watching a given folder and sending messages to RabbitMQ
 
-* tlCommonMessaging - project for common RabbitMQ connection / setup and message body, used by both the above applications to save code duplication
+* [tlCommonMessaging](https://github.com/clwilliams/tlCommonMessaging) - project for common RabbitMQ connection / setup and message body struct, used by both the above applications to save code duplication
 
 All 3 need cloning to your machine and glide install ran for each.
 
 ## Getting everything up & running
 
-You need to have the latest docker installed. Then
+You need to have the latest docker installed. Then:
 
 * Run up the docker in this project (provides RabbitMQ & elasticSearch)
 ```
