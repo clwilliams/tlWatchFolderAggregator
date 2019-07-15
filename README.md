@@ -1,16 +1,16 @@
 ## Brief summary
 
-* tlWatchFolderAggregator - project for consuming message from Rabbit MQ & storing in elastic search. Also serves the API for the JSON calls.
+* [tlWatchFolderAggregator](https://github.com/clwilliams/tlWatchFolderAggregator) - project for consuming messages from Rabbit MQ & storing file / folder data in elastic search. Also serves the API for the JSON calls.
 
-* tlWatchFolder - project for watching a given folder and sending messages to RabbitMQ
+* [tlWatchFolder](https://github.com/clwilliams/tlWatchFolder) - project for watching a given folder and sending messages to RabbitMQ
 
-* tlCommonMessaging - project for common RabbitMQ connection / setup and message body, used by both the above applications to save code duplication
+* [tlCommonMessaging](https://github.com/clwilliams/tlCommonMessaging) - project for common RabbitMQ connection / setup and message body struct, used by both the above applications to save code duplication
 
-All 3 need cloning to your machine and glide install ran for each.
+You need to clone the first 2 and run glide install for each
 
 ## Getting everything up & running
 
-You need to have the latest docker installed. Then
+You need to have the latest docker installed. Then:
 
 * Run up the docker in this project (provides RabbitMQ & elasticSearch)
 ```
@@ -20,12 +20,12 @@ docker-compose up
 
  - ElasticSearch head  http://localhost:9100/
 
-* Start tlWatchFolderAggregator (accept default args, but you can overwrite with environment variables / command line args if wanted), & run:
+* Start tlWatchFolderAggregator (accept default args, but you can overwrite with environment variables / command line args if wanted). cd into the tlWatchFolderAggregator folder & run:
 ```
 go run main.go
 ```
 
-* Start tlWatchFolder (accept default args, again you can overwrite with environment variables / command line args if wanted), & run e.g.:
+* Start tlWatchFolder (accept default args, again you can overwrite with environment variables / command line args if wanted), cd into the tlWatchFolder & run e.g.:
 ```
 go run main.go --watchFolderPath="/Users/clairew/watch_me"
 ```
