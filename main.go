@@ -88,7 +88,7 @@ func main() {
 		log.Debug().Msg("Set logging to verbose")
 	}
 
-	// initialise connection to elast search, which will also ensure the index
+	// initialise connection to elastic search, which will also ensure the index
 	// that we want to use exixts. If not it will create it
 	esApp, err := elasticSearch.Connect(*verbose, *elasticURL, *elasticIndex)
 	if err != nil {

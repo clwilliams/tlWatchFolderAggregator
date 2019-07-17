@@ -79,15 +79,20 @@ func handleCreate(config *elasticSearch.App, folderWatchMsg *rabbitMQ.FolderWatc
 	name := retrieveName(folderWatchMsg.Path)
 
 	// set a boolean value to state whether or not this is the parent watch folder
-	isWatchFolder := "false"
+	isWatchFolder := false
 	if folderWatchMsg.WatchFolder == folderWatchMsg.Path {
-		isWatchFolder = "true"
+		isWatchFolder = true
+	}
+
+	isDir := false
+	if folderWatchMsg.IsDir=="true" {
+		isDir = true
 	}
 
 	// initialise the data that we will store in elastic search
 	fsNode := elasticSearch.FsNode{
 		Name:          name,
-		IsDir:         folderWatchMsg.IsDir,
+		IsDir:         isDir,
 		FullPath:      folderWatchMsg.Path,
 		IsWatchFolder: isWatchFolder,
 	}

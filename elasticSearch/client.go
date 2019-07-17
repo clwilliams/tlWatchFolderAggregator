@@ -31,9 +31,11 @@ func Connect(verbose bool, esURL, esIndex string) (*App, error) {
 
 	// connect to the elastic search client
 	client, err := es.NewClient(
-		es.SetURL(esURL),
+		// es.SetURL(esURL),
 		es.SetErrorLog(elasticLog{log.Logger}),
 		es.SetTraceLog(esTraceLog),
+		es.SetSniff(false),
+		es.SetHealthcheck(false),
 	)
 	if err != nil {
 		return nil, err

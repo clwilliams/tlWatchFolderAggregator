@@ -11,9 +11,9 @@ import (
 // FsNode represents a file server node
 type FsNode struct {
 	Name          string `json:"name"`
-	IsDir         string `json:"isDir"`
+	IsDir         bool   `json:"isDir"`
 	FullPath      string `json:"fullPath"`
-	IsWatchFolder string `json:"isWatchFolder"`
+	IsWatchFolder bool   `json:"isWatchFolder"`
 }
 
 const docType = "doc"

@@ -37,10 +37,10 @@ const tlFolderWatchMapping = `{
           }
         },
         "isDir" : {
-          "type" : "keyword"
+          "type" : "boolean"
         },
         "isWatchFolder" : {
-          "type" : "keyword"
+          "type" : "boolean"
         }
       }
     }
